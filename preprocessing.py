@@ -13,6 +13,8 @@ def parse_annotation(ann_dir, img_dir, labels=[]):
     seen_labels = {}
     
     for ann in sorted(os.listdir(ann_dir)):
+        if ann[-4:] != ".xml":
+            continue
         img = {'object':[]}
 
         tree = ET.parse(ann_dir + ann)

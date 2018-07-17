@@ -55,10 +55,10 @@ def _main_(args):
             depth.text = '3'
             objects = []
             for shape in json_dict["shapes"]:
-                xmin = int(resize * shape["points"][0][1])
-                ymin = int(resize * shape["points"][0][0])
-                xmax = int(resize * shape["points"][2][1])
-                ymax = int(resize * shape["points"][2][0])
+                xmin = int(resize * shape["points"][0][0])
+                ymin = int(resize * shape["points"][0][1])
+                xmax = int(resize * shape["points"][2][0])
+                ymax = int(resize * shape["points"][2][1])
                 bb = {"xmin": xmin, "ymin": ymin, "xmax": xmax, "ymax": ymax}
                 objects = SubElement(root, 'object')
                 name =  SubElement(objects, 'name')

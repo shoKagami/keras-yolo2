@@ -42,8 +42,9 @@ def _main_(args):
         train_valid_split = int(0.8*len(train_imgs))
         np.random.shuffle(train_imgs)
 
-        valid_imgs = train_imgs[train_valid_split:]
-        train_imgs = train_imgs[:train_valid_split]
+        # valid_imgs = train_imgs[train_valid_split:]
+        # train_imgs = train_imgs[:train_valid_split]
+        valid_imgs = train_imgs
 
     if len(config['model']['labels']) > 0:
         overlap_labels = set(config['model']['labels']).intersection(set(train_labels.keys()))

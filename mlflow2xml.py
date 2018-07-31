@@ -13,13 +13,8 @@ argparser = argparse.ArgumentParser(
 
 argparser.add_argument(
     '-i',
-    '--image',
-    help='path to image folder')
-
-argparser.add_argument(
-    '-j',
-    '--json',
-    help='path to json folder')
+    '--input',
+    help='path to annotated data by using mlflow')
 
 argparser.add_argument(
     '-o',
@@ -27,23 +22,26 @@ argparser.add_argument(
     help='path to xml folder')
 
 def _main_(args):
-    dirJson = args.json
-    dirImage = args.image
+    dirInput = args.input
     dirOutput = args.output
 
-    for file in os.listdir(dirJson):
-        root = makeDefaultXml(dirImage)
+    for file in os.listdir(dirInput):
+        root = makeDefaultXml(dirInput)
         if(file[-5:] == '.json'):
-            inname = os.path.join(dirJson, file)
+            inname = os.path.join(dirInput, file)
             with open(inname, 'r') as f_buffer:    
                 json_dict = json.load(f_buffer)
             
+            # '_train.json' -> '.jpg'
+            imagename = file[:-11] + '.jpg'
             fname = SubElement(root, 'filename')
-            fname.text = json_dict["imagePath"]
+            fname.text = imagename
             path = SubElement(root, 'path')
-            path.text = os.path.join(dirImage, json_dict["imagePath"])
+            path.text = os.path.join(dirInput, imagename)
 
             im = cv2.imread(path.text)
+            if im is None:
+                continue
             h, w = im.shape[:2]
             size = SubElement(root, 'size')
             width = SubElement(size, 'width')
@@ -53,15 +51,20 @@ def _main_(args):
             depth = SubElement(size, 'depth')
             depth.text = '3'
             objects = []
-            for shape in json_dict["shapes"]:
-                xmin = min(shape["points"][0][0], shape["points"][2][0])
-                ymin = min(shape["points"][0][1], shape["points"][2][1])
-                xmax = max(shape["points"][0][0], shape["points"][2][0])
-                ymax = max(shape["points"][0][1], shape["points"][2][1])
+            for shape in json_dict["detectionAnnotations"]:
+                points = np.array(shape["boundingRect"])
+                points_min = np.min(points, axis=0)
+                points_max = np.max(points, axis=0)
+                
+                xmin = points_min[0]
+                ymin = points_min[1]
+                xmax = points_max[0]
+                ymax = points_max[1]
                 bb = {"xmin": xmin, "ymin": ymin, "xmax": xmax, "ymax": ymax}
                 objects = SubElement(root, 'object')
-                name =  SubElement(objects, 'name')
-                name.text = shape["label"]
+                if "object_type" in shape:
+                    name =  SubElement(objects, 'name')
+                    name.text = shape["object_type"]
                 pose =  SubElement(objects, 'pose')
                 pose.text = 'Unspecified'
                 truncated =  SubElement(objects, 'truncated')
@@ -78,9 +81,8 @@ def _main_(args):
                 ymax_ =  SubElement(bnbbox, 'ymax')
                 ymax_.text = str(ymax)
 
-            outname = os.path.join(dirOutput, file[:-5] + ".xml")
+            outname = os.path.join(dirOutput, file[:-11] + ".xml")
             ElementTree(root).write(open(outname, 'wb'))
-            ElementTree(root).write(open('hoge.xml', 'wb'))
 
 def makeDefaultXml(folderName):
     root = Element('annotation')

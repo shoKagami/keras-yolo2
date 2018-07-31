@@ -10,7 +10,7 @@ from keras.applications import InceptionV3
 from keras.applications.vgg16 import VGG16
 from keras.applications.resnet50 import ResNet50
 
-BACKEND_PATH = "model"
+BACKEND_PATH = "model_backend"
 
 FULL_YOLO_PATH  = "full_yolo_backend.h5"   # should be hosted on a server
 TINY_YOLO_PATH  = "tiny_yolo_backend.h5"   # should be hosted on a server
